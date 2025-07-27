@@ -5,6 +5,14 @@ import { rules } from "@/lib/rules";
 import { Theme, getDefaultTheme } from "@/lib/themes";
 import { useEffect, useRef, useState } from "react";
 
+// Farcaster Mini App SDK
+let sdk: any = null;
+if (typeof window !== 'undefined') {
+  import('@farcaster/miniapp-sdk').then((module) => {
+    sdk = module.sdk;
+  }).catch(console.error);
+}
+
 export default function MiniAppPage() {
   const [password, setPassword] = useState("");
   const [completedRules, setCompletedRules] = useState<number[]>([]);
@@ -66,6 +74,33 @@ export default function MiniAppPage() {
     }
   };
 
+  // Share result on Farcaster
+  const handleShareResult = async () => {
+    if (!sdk) {
+      console.error('Farcaster SDK not available');
+      return;
+    }
+
+    try {
+      const shareText = `🎉 I just cracked the Password Guesser challenge! 
+      
+I successfully guessed a password that meets all ${rules.length} requirements! 
+
+Can you beat my score? Try it yourself! 🔐`;
+
+      const result = await sdk.actions.composeCast({
+        text: shareText,
+        embeds: [window.location.origin],
+      });
+
+      if (result?.cast) {
+        console.log('Cast posted successfully:', result.cast.hash);
+      }
+    } catch (error) {
+      console.error('Failed to share result:', error);
+    }
+  };
+
   // Reset game
   const handleReset = () => {
     setPassword("");
@@ -100,13 +135,26 @@ export default function MiniAppPage() {
             Congratulations! You&apos;ve successfully guessed the password that
             meets all the requirements.
           </p>
-          <button
-            onClick={handleReset}
-            className="px-6 py-3 text-base text-white rounded-lg hover:opacity-90 transition-all duration-200 font-medium"
-            style={{ background: currentTheme.gradients.primary }}
-          >
-            Play Again
-          </button>
+          <div className="space-y-3">
+            <button
+              onClick={handleShareResult}
+              className="w-full px-6 py-3 text-base text-white rounded-lg hover:opacity-90 transition-all duration-200 font-medium"
+              style={{ background: currentTheme.gradients.primary }}
+            >
+              🎉 Share on Farcaster
+            </button>
+            <button
+              onClick={handleReset}
+              className="w-full px-6 py-3 text-base rounded-lg hover:opacity-90 transition-all duration-200 font-medium border-2"
+              style={{ 
+                color: currentTheme.colors.primary,
+                borderColor: currentTheme.colors.primary,
+                backgroundColor: 'transparent'
+              }}
+            >
+              Play Again
+            </button>
+          </div>
         </div>
       </div>
     );
