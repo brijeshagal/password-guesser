@@ -1,0 +1,25 @@
+{
+  "miniapp": {
+    "version": "1",
+    "name": "Password Guesser",
+    "iconUrl": "https://password-guesser.vercel.app/icon.svg",
+    "homeUrl": "https://password-guesser.vercel.app/mini",
+    "splashImageUrl": "https://password-guesser.vercel.app/splash.svg",
+    "splashBackgroundColor": "#0052f",
+    "subtitle": "Test your password skills",
+    "description": "A challenging password guessing game where you must meet specific requirements to unlock each level. Can you crack all the rules?",
+    "primaryCategory": "games",
+    "tags": [
+      "password",
+      "game",
+      "puzzle",
+      "challenge",
+      "security"
+    ],
+    "heroImageUrl": "https://password-guesser.vercel.app/hero.svg",
+    "tagline": "Crack the password rules",
+    "ogTitle": "Password Guesser",
+    "ogDescription": "Test your password skills with this challenging guessing game",
+    "ogImageUrl": "https://password-guesser.vercel.app/og.svg"
+  }
+} 

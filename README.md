@@ -1,36 +1,189 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Password Guesser - Farcaster Mini App
 
-## Getting Started
+A challenging password guessing game where you must meet specific requirements to unlock each level. Can you crack all the rules?
 
-First, run the development server:
+## 🎮 Game Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **Progressive Rule Checking**: Rules are checked one by one as you progress
+- **Real-time Feedback**: See which rules you've passed and which one you're currently working on
+- **Multiple Themes**: Beautiful color schemes to choose from
+- **Mobile Optimized**: Works perfectly on mobile devices and Farcaster Mini Apps
+
+## 🚀 Deployment
+
+### Deploy to Vercel
+
+1. **Fork or clone this repository**
+   ```bash
+   git clone https://github.com/yourusername/password-guesser.git
+   cd password-guesser
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Deploy to Vercel**
+   ```bash
+   npx vercel --prod
+   ```
+
+4. **Set your custom domain** (optional but recommended)
+   - Go to your Vercel dashboard
+   - Add a custom domain like `password-guesser.yourdomain.com`
+
+## 📱 Publishing as Farcaster Mini App
+
+### 1. Update the Manifest
+
+The Farcaster Mini App manifest is located at `public/.well-known/farcaster.json`. Update the URLs to match your deployed domain:
+
+```json
+{
+  "miniapp": {
+    "version": "1",
+    "name": "Password Guesser",
+    "iconUrl": "https://yourdomain.com/icon.svg",
+    "homeUrl": "https://yourdomain.com/mini",
+    "splashImageUrl": "https://yourdomain.com/splash.svg",
+    "splashBackgroundColor": "#0052f",
+    "subtitle": "Test your password skills",
+    "description": "A challenging password guessing game where you must meet specific requirements to unlock each level. Can you crack all the rules?",
+    "primaryCategory": "games",
+    "tags": ["password", "game", "puzzle", "challenge", "security"],
+    "heroImageUrl": "https://yourdomain.com/hero.svg",
+    "tagline": "Crack the password rules",
+    "ogTitle": "Password Guesser",
+    "ogDescription": "Test your password skills with this challenging guessing game",
+    "ogImageUrl": "https://yourdomain.com/og.svg"
+  }
+}
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Verify Your Domain
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. **Deploy your app** to a stable domain
+2. **Test the manifest** by visiting `https://yourdomain.com/.well-known/farcaster.json`
+3. **Ensure all image URLs are accessible**
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 3. Create Hosted Manifest (Recommended)
 
-## Learn More
+1. Visit [Farcaster Developer Tools](https://farcaster.xyz/~/developers/mini-apps/manifest)
+2. Enter your domain and app details
+3. You'll receive a hosted manifest ID
+4. Update your `next.config.ts` to redirect to the hosted manifest:
 
-To learn more about Next.js, take a look at the following resources:
+```typescript
+import type { NextConfig } from "next";
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+const nextConfig: NextConfig = {
+  async redirects() {
+    return [
+      {
+        source: '/.well-known/farcaster.json',
+        destination: 'https://api.farcaster.xyz/miniapp/hosted-manifest/YOUR_MANIFEST_ID',
+        permanent: false,
+      },
+    ];
+  },
+  async headers() {
+    return [
+      {
+        source: '/.well-known/farcaster.json',
+        headers: [
+          {
+            key: 'Content-Type',
+            value: 'application/json',
+          },
+        ],
+      },
+    ];
+  },
+};
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+export default nextConfig;
+```
 
-## Deploy on Vercel
+### 4. Verify App Ownership
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. Use the **Mini App Manifest Tool** in Warpcast
+2. Generate a signed account association
+3. Add the `accountAssociation` property to your manifest
+4. This makes you eligible for **Warpcast Developer Rewards**
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🎨 Customization
+
+### Adding New Rules
+
+Edit `src/lib/rules.ts` to add new password validation rules:
+
+```typescript
+export const rules: Rule[] = [
+  {
+    id: "length",
+    name: "Must be at least 8 characters",
+    description: "Your password needs to be at least 8 characters long",
+    validate: (password: string) => password.length >= 8,
+  },
+  // Add more rules here...
+];
+```
+
+### Customizing Themes
+
+Edit `src/lib/themes.ts` to modify the color schemes:
+
+```typescript
+export const themes: Theme[] = [
+  {
+    id: 'base',
+    name: 'Base Fellowship',
+    colors: {
+      primary: '#0052f',
+      // ... other colors
+    },
+    gradients: {
+      background: 'bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50',
+      primary: 'bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600',
+    },
+  },
+  // Add more themes...
+];
+```
+
+## 📱 Mini App vs Web App
+
+- **Web App**: Visit `/` for the full experience with theme switcher
+- **Mini App**: Visit `/mini` for the optimized Farcaster Mini App experience
+
+## 🔧 Development
+
+```bash
+# Install dependencies
+npm install
+
+# Run development server
+npm run dev
+
+# Build for production
+npm run build
+
+# Start production server
+npm start
+```
+
+## 📄 License
+
+MIT License - feel free to use this project for your own Mini Apps!
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Submit a pull request
+
+## 📞 Support
+
+If you need help with deployment or have questions about Farcaster Mini Apps, check out the [official documentation](https://miniapps.farcaster.xyz/docs/guides/publishing).
