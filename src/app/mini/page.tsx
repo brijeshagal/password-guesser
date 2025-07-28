@@ -25,11 +25,20 @@ export default function MiniAppPage() {
   const [currentTheme, setCurrentTheme] = useState<Theme>(getDefaultTheme());
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Auto-focus input on mount
+  // Auto-focus input on mount and initialize Mini App SDK
   useEffect(() => {
-    if (inputRef.current) {
-      inputRef.current.focus();
-    }
+    const initializeApp = async () => {
+      if (inputRef.current) {
+        inputRef.current.focus();
+      }
+
+      // Initialize Farcaster Mini App SDK
+      if (sdk) {
+        await sdk.actions.ready().catch(console.error);
+      }
+    };
+
+    initializeApp();
   }, []);
 
   // Check rules progressively

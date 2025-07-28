@@ -35,9 +35,37 @@ A challenging password guessing game where you must meet specific requirements t
 
 ## 📱 Publishing as Farcaster Mini App
 
-### 1. Update the Manifest
+### 1. Verify Manifest Configuration
 
-The Farcaster Mini App manifest is located at `public/.well-known/farcaster.json`. Update the URLs to match your deployed domain:
+**Test your manifest accessibility:**
+```bash
+curl -s https://yourdomain.com/.well-known/farcaster.json
+```
+
+**Expected output:**
+```json
+{
+  "miniapp": {
+    "version": "1",
+    "name": "Password Guesser",
+    "iconUrl": "https://yourdomain.com/icon.svg",
+    "homeUrl": "https://yourdomain.com/mini",
+    "splashImageUrl": "https://yourdomain.com/splash.svg",
+    "splashBackgroundColor": "#0052f",
+    "subtitle": "Test your password skills",
+    "description": "A challenging password guessing game where you must meet specific requirements to unlock each level. Can you crack all the rules?",
+    "primaryCategory": "games",
+    "tags": ["password", "game", "puzzle", "challenge", "security"],
+    "heroImageUrl": "https://yourdomain.com/hero.svg",
+    "tagline": "Crack the password rules",
+    "ogTitle": "Password Guesser",
+    "ogDescription": "Test your password skills with this challenging guessing game",
+    "ogImageUrl": "https://yourdomain.com/og.svg"
+  }
+}
+```
+
+### 2. Update the Manifest URLs
 
 ```json
 {
@@ -111,6 +139,36 @@ export default nextConfig;
 2. Generate a signed account association
 3. Add the `accountAssociation` property to your manifest
 4. This makes you eligible for **Warpcast Developer Rewards**
+
+### 5. Test Embed Metadata
+
+**Verify embed tags are present:**
+```bash
+curl -s https://yourdomain.com/mini | grep -E 'fc:miniapp|fc:frame'
+```
+
+**Expected output:**
+```html
+<meta name="fc:miniapp" content='{"version":"1","imageUrl":"...","button":{...}}' />
+```
+
+### 6. Test in Preview Tool
+
+1. **Encode your URL:**
+   ```bash
+   encoded_url=$(python3 -c "import urllib.parse; print(urllib.parse.quote('https://yourdomain.com/mini'))")
+   echo "https://farcaster.xyz/~/developers/mini-apps/preview?url=$encoded_url"
+   ```
+
+2. **Open the preview URL** to test your Mini App
+
+### 7. Post-Check Verification
+
+After deployment, verify:
+1. **Manifest is accessible:** `curl -s https://yourdomain.com/.well-known/farcaster.json`
+2. **Embed preview works:** Share a link in Farcaster client
+3. **App launches correctly:** Click the embed to open the Mini App
+4. **No console errors:** Check browser console for SDK issues
 
 ## 🎨 Customization
 

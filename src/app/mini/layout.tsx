@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import "./globals.css";
 
 const frame = {
   version: "1",
@@ -17,11 +16,11 @@ const frame = {
 };
 
 export const metadata: Metadata = {
-  title: "Password Guesser",
-  description: "A challenging password guessing game where you must meet specific requirements to unlock each level.",
+  title: "Password Guesser - Mini App",
+  description: "Test your password skills with this challenging guessing game",
   openGraph: {
-    title: "Password Guesser",
-    description: "Test your password skills with this challenging guessing game",
+    title: "Password Guesser - Mini App",
+    description: "A challenging password guessing game optimized for Farcaster Mini Apps",
     images: ["https://password-guesser.vercel.app/og.svg"],
   },
   other: {
@@ -29,14 +28,10 @@ export const metadata: Metadata = {
   }
 };
 
-export default function RootLayout({
+export default function MiniAppLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <html lang="en">
-      <body>{children}</body>
-    </html>
-  );
-}
+  return children;
+} 

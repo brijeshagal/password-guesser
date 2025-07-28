@@ -26,10 +26,15 @@ export default function GamePage() {
   const [currentTheme, setCurrentTheme] = useState<Theme>(getDefaultTheme());
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Auto-focus input on mount
+  // Auto-focus input on mount and initialize Mini App SDK
   useEffect(() => {
     if (inputRef.current) {
       inputRef.current.focus();
+    }
+
+    // Initialize Farcaster Mini App SDK
+    if (sdk) {
+      sdk.actions.ready().catch(console.error);
     }
   }, []);
 
