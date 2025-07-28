@@ -4,37 +4,32 @@ import RuleCard from "@/components/RuleCard";
 import ThemeSwitcher from "@/components/ThemeSwitcher";
 import { rules } from "@/lib/rules";
 import { Theme, getDefaultTheme } from "@/lib/themes";
+import { Rule } from "@/lib/types";
 import { useEffect, useRef, useState } from "react";
 
-// Farcaster Mini App SDK
+// Farcaster Mini App SDK - initialized in layout
 let sdk: any = null;
-if (typeof window !== 'undefined') {
-  import('@farcaster/miniapp-sdk').then((module) => {
-    sdk = module.sdk;
-  }).catch(console.error);
+if (typeof window !== "undefined") {
+  import("@farcaster/miniapp-sdk")
+    .then((module) => {
+      sdk = module.sdk;
+    })
+    .catch(console.error);
 }
 
-export default function GamePage() {
+export default function MiniAppPage() {
   const [password, setPassword] = useState("");
-  const [completedRules, setCompletedRules] = useState<number[]>([]);
-  const [currentFailedRuleIndex, setCurrentFailedRuleIndex] = useState<
-    number | null
-  >(null);
   const [rulesComponents, setRulesComponents] = useState<any[]>([]);
   const [isCompleted, setIsCompleted] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
   const [currentTheme, setCurrentTheme] = useState<Theme>(getDefaultTheme());
   const inputRef = useRef<HTMLInputElement>(null);
+  const [currentRules] = useState<Rule[]>(rules);
 
-  // Auto-focus input on mount and initialize Mini App SDK
+  // Auto-focus input on mount
   useEffect(() => {
     if (inputRef.current) {
       inputRef.current.focus();
-    }
-
-    // Initialize Farcaster Mini App SDK
-    if (sdk) {
-      sdk.actions.ready().catch(console.error);
     }
   }, []);
 
@@ -46,28 +41,24 @@ export default function GamePage() {
     }
 
     // Check each rule one by one in a loop
-    for (let i = 0; i < rules.length; i++) {
-      // Skip if this rule is already completed
-      if (completedRules.includes(i)) {
-        continue;
-      }
-
-      const rule = rules[i];
+    for (let i = 0; i < currentRules.length; i++) {
+      const rule = currentRules[i];
       const isPassed = rule.validate(password);
 
-      if (isPassed) {
-        // Rule passed - add to completed
-        setCompletedRules((prev) => [...prev, i]);
-        setRulesComponents((prev) => [rule, ...prev]);
-
-        // Check if all rules are completed
-        if (completedRules.length + 1 === rules.length) {
-          setIsCompleted(true);
-          return;
+      if (!isPassed) {
+        const prevRuleComponent = rulesComponents[0];
+        if (
+          prevRuleComponent &&
+          prevRuleComponent.index < i &&
+          prevRuleComponent.isPassed === false
+        ) {
+          const ruleToAdd = { ...prevRuleComponent, isPassed: true };
+          setRulesComponents((prev) => [ruleToAdd, ...prev]);
         }
-      } else {
-        // Rule failed - set as current failed rule and stop checking
-        setCurrentFailedRuleIndex(i);
+        setRulesComponents((prev) => [
+          { ...rule, isPassed: false, index: i },
+          ...prev,
+        ]);
         return;
       }
     }
@@ -76,6 +67,7 @@ export default function GamePage() {
   // Handle Enter key
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
+      console.log("checking rules");
       checkRulesProgressively();
     }
   };
@@ -83,14 +75,14 @@ export default function GamePage() {
   // Share result on Farcaster
   const handleShareResult = async () => {
     if (!sdk) {
-      console.error('Farcaster SDK not available');
+      console.error("Farcaster SDK not available");
       return;
     }
 
     try {
       const shareText = `🎉 I just cracked the Password Guesser challenge! 
       
-I successfully guessed a password that meets all ${rules.length} requirements! 
+I successfully guessed a password that meets all ${currentRules.length} requirements! 
 
 Can you beat my score? Try it yourself! 🔐`;
 
@@ -100,18 +92,16 @@ Can you beat my score? Try it yourself! 🔐`;
       });
 
       if (result?.cast) {
-        console.log('Cast posted successfully:', result.cast.hash);
+        console.log("Cast posted successfully:", result.cast.hash);
       }
     } catch (error) {
-      console.error('Failed to share result:', error);
+      console.error("Failed to share result:", error);
     }
   };
 
   // Reset game
   const handleReset = () => {
     setPassword("");
-    setCompletedRules([]);
-    setCurrentFailedRuleIndex(null);
     setRulesComponents([]);
     setIsCompleted(false);
     setHasStarted(false);
@@ -123,19 +113,19 @@ Can you beat my score? Try it yourself! 🔐`;
   if (isCompleted) {
     return (
       <div
-        className="min-h-screen flex items-center justify-center p-3 sm:p-4 transition-all duration-300"
+        className="min-h-screen flex items-center justify-center p-4 transition-all duration-300"
         style={{ background: currentTheme.colors.background }}
       >
-        <div className="text-center w-full max-w-sm sm:max-w-md px-4">
-          <div className="text-5xl sm:text-6xl mb-4 sm:mb-6">🎉</div>
+        <div className="text-center w-full max-w-sm px-4">
+          <div className="text-6xl mb-6">🎉</div>
           <h1
-            className="text-2xl sm:text-3xl font-bold mb-3 sm:mb-4"
+            className="text-3xl font-bold mb-4"
             style={{ color: currentTheme.colors.text }}
           >
             You cracked it!
           </h1>
           <p
-            className="mb-6 sm:mb-8 text-sm sm:text-base"
+            className="mb-8 text-base"
             style={{ color: currentTheme.colors.textSecondary }}
           >
             Congratulations! You&apos;ve successfully guessed the password that
@@ -144,18 +134,18 @@ Can you beat my score? Try it yourself! 🔐`;
           <div className="space-y-3">
             <button
               onClick={handleShareResult}
-              className="w-full px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base text-white rounded-lg hover:opacity-90 transition-all duration-200 font-medium"
+              className="w-full px-6 py-3 text-base text-white rounded-lg hover:opacity-90 transition-all duration-200 font-medium"
               style={{ background: currentTheme.gradients.primary }}
             >
               🎉 Share on Farcaster
             </button>
             <button
               onClick={handleReset}
-              className="w-full px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base rounded-lg hover:opacity-90 transition-all duration-200 font-medium border-2"
-              style={{ 
+              className="w-full px-6 py-3 text-base rounded-lg hover:opacity-90 transition-all duration-200 font-medium border-2"
+              style={{
                 color: currentTheme.colors.primary,
                 borderColor: currentTheme.colors.primary,
-                backgroundColor: 'transparent'
+                backgroundColor: "transparent",
               }}
             >
               Play Again
@@ -168,43 +158,41 @@ Can you beat my score? Try it yourself! 🔐`;
 
   return (
     <div
-      className={`min-h-screen flex items-center justify-center p-3 sm:p-4 transition-all duration-300 ${currentTheme.gradients.background}`}
+      className={`min-h-screen p-4 transition-all duration-300 ${currentTheme.gradients.background}`}
     >
-      <div className="w-full max-w-sm sm:max-w-md px-2 sm:px-0">
+      <div className="w-full max-w-sm mx-auto">
         {/* Header */}
-        <div className="text-center mb-6 sm:mb-8">
+        <div className="text-center mb-8">
+          <div className="flex justify-end mb-4">
+            <ThemeSwitcher
+              currentTheme={currentTheme}
+              onThemeChange={setCurrentTheme}
+            />
+          </div>
           <h1
-            className="text-2xl sm:text-3xl font-bold mb-2"
+            className="text-3xl font-bold mb-2"
             style={{ color: currentTheme.colors.text }}
           >
-            Guess the Password
+            Password Guesser
           </h1>
           <h2
-            className="text-base sm:text-lg font-medium mb-2"
+            className="text-lg font-medium mb-2"
             style={{ color: currentTheme.colors.primary }}
           >
-            Base Fellowship Edition
+            Mini App Edition
           </h2>
         </div>
 
-        {/* Theme Switcher - Positioned separately */}
-        <div className="flex justify-center mb-4 sm:mb-6">
-          <ThemeSwitcher
-            currentTheme={currentTheme}
-            onThemeChange={setCurrentTheme}
-          />
-        </div>
-
         {/* Password Input */}
-        <div className="mb-6 sm:mb-8">
+        <div className="mb-8">
           <input
             ref={inputRef}
             type="text"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            onKeyPress={handleKeyPress}
+            onKeyDown={handleKeyPress}
             placeholder="Enter your password..."
-            className="w-full px-3 sm:px-4 py-2 sm:py-3 text-base sm:text-lg rounded-lg focus:outline-none focus:ring-2 transition-all duration-200 font-mono"
+            className="w-full px-4 py-3 text-lg rounded-lg focus:outline-none focus:ring-2 transition-all duration-200 font-mono"
             style={{
               backgroundColor: currentTheme.colors.inputBg,
               borderColor: currentTheme.colors.inputBorder,
@@ -228,66 +216,28 @@ Can you beat my score? Try it yourself! 🔐`;
         {/* Rules only show after game has started */}
         {hasStarted && (
           <>
-            {/* All Rule Cards in Order */}
-            <div className="space-y-2 sm:space-y-3 mb-4 sm:mb-6">
-              {/* Completed Rules - Show in order they were completed */}
+            <div className="space-y-3 mb-6">
               {rulesComponents.map((rule, index) => (
                 <div
                   key={`rule-${rule.id}-${index}`}
                   className="transform translate-y-0 transition-all duration-500"
                 >
-                  <RuleCard rule={rule} isPassed={true} theme={currentTheme} />
+                  <RuleCard rule={rule} theme={currentTheme} />
                 </div>
               ))}
-
-              {/* Current Failed Rule - Always at the bottom */}
-              {currentFailedRuleIndex !== null && (
-                <div
-                  key={`rule-${currentFailedRuleIndex}-failed`}
-                  className="transform translate-y-0 transition-all duration-500"
-                >
-                  <RuleCard
-                    rule={rules[currentFailedRuleIndex]}
-                    isPassed={false}
-                    theme={currentTheme}
-                  />
-                </div>
-              )}
-            </div>
-
-            {/* Progress */}
-            <div className="mt-4 sm:mt-6 text-center">
-              <div
-                className="text-xs sm:text-sm mb-2"
-                style={{ color: currentTheme.colors.textSecondary }}
-              >
-                {completedRules.length} of {rules.length} rules completed
-              </div>
-              <div
-                className="w-full rounded-full h-1.5 sm:h-2"
-                style={{ backgroundColor: currentTheme.colors.border }}
-              >
-                <div
-                  className="rounded-full transition-all duration-300 h-1.5 sm:h-2"
-                  style={{
-                    width: `${(completedRules.length / rules.length) * 100}%`,
-                    backgroundColor: currentTheme.colors.success,
-                  }}
-                ></div>
-              </div>
             </div>
           </>
         )}
 
         {/* Instructions */}
-        <div className="mt-6 sm:mt-8 text-center">
+        <div className="mt-8 text-center">
           <p
-            className="text-xs sm:text-sm"
+            className="text-sm"
             style={{ color: currentTheme.colors.textSecondary }}
           >
             Press{" "}
             <kbd
-              className="px-1.5 sm:px-2 py-0.5 sm:py-1 rounded text-xs"
+              className="px-2 py-1 rounded text-sm"
               style={{
                 backgroundColor: currentTheme.colors.border,
                 color: currentTheme.colors.text,
